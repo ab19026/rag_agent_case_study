@@ -1,0 +1,10 @@
+{
+    "port" : {
+        "route" : 9873,
+        "instance" : [8788, 8901, 8112]
+    },
+    "max_worker_num" : 10,
+    "invalid_request_message" : "",
+    "agent_trace" : true
+}
+

@@ -1,0 +1,17 @@
+{
+    "load_data" : {
+        "lang" : {
+            "en" : ["default"],
+            "zh" : ["default"]
+        }
+    },
+    "hybrid" : true,
+    "rerank" : true,
+    "doc_split" : {
+        "chunk_size" : 500,
+        "chunk_overlap" : 50
+    },
+    "topK" : 10,
+    "db_name" : "jzl",
+    "retrieve_optimizer" : ["SPLIT"]
+}

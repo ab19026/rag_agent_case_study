@@ -1,0 +1,30 @@
+{
+    "agent" : {
+        "name" : "deepseekV4",
+        "port" : {
+            "route" : 9811,
+            "instance" : [2344,5466,3455]
+        },
+        "local" : false,
+        "api" : {
+            "key" : "xxx",
+            "host" : "xxx"
+        }
+    },
+    "embedding" : {
+        "name" : "xx",
+        "port" : {
+            "route" : 9811,
+            "instance" : [2344,5466,3455]
+        },
+        "local" : true,
+    },
+    "rerank" : {
+        "name" : "xx",
+        "port" : {
+            "route" : 9811,
+            "instance" : [2344,5466,3455]
+        },
+        "local" : true,
+    },
+}

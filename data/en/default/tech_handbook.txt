@@ -1,0 +1,210 @@
+
+**Technical Manual for Ancheng Intelligent Insurance Platform (ACIP)**  
+
+**Document Version:** V2.0  
+**Update Date:** May 2026  
+**Target Audience:** Head office/branch back‑office staff, underwriting & claims personnel, customer service staff, IT R&D center, third‑party outsourced development and testing teams  
+**System Name:** Ancheng Intelligent Insurance Platform (ACIP)  
+
+---
+
+## Part 1 – System Operation Manual
+
+### I. System Overview and Login
+
+ACIP is a one‑stop core insurance platform independently developed by Ancheng Life. It integrates the entire business process: policy application, underwriting, premium payment, policy servicing, claims, dual‑recording quality inspection, anti‑money laundering (AML), commission calculation, and data reporting. The system adopts a B/S architecture and supports the latest versions of Chrome and Edge browsers.
+
+**Access URLs:**  
+- Production environment: `https://acip.encheng-life.com`  
+- UAT environment: `https://uat-acip.encheng-life.com` (for back‑office validation)
+
+**Login Methods:**  
+- Back‑office staff and managers: corporate domain account + password + SMS OTP two‑factor authentication.  
+- Field agents: access the agent‑dedicated portal at `agent.encheng-life.com` via WeChat Work QR code or mobile number + verification code. Only restricted modules are available: customer creation, quotations, online application, dual‑recording upload, commission details, and “My Customers”.
+
+**Role‑based Access Matrix (excerpt):**
+
+| Role | Accessible Modules |
+|------|--------------------|
+| Insurance Consultant (Agent) | New customer, proposal, online application, dual‑recording upload, commission details, my customers |
+| New Business Clerk (Back‑office) | Application preliminary review, dual‑recording QA, query issuance, receipt tracking |
+| Underwriter | Manual underwriting interaction, medical history questionnaire issuance, medical exam letter generation, underwriting decision entry |
+| Claims Adjuster | Claim notification, document review, investigation follow‑up, benefit calculation, case closure |
+| Compliance/Legal | AML review, suspicious transaction screening, dual‑recording spot check, complaint workflow |
+| System Administrator | User permission assignment, organization tree maintenance, code table configuration, work calendar setup |
+
+### II. New Business and Policy Application Management
+
+This module corresponds to the sales compliance and underwriting requirements in Chapters 9 and 10 of the Employee Handbook.
+
+#### 1. Customer Information Entry and Validation
+- Enter customer name, ID type, ID number, and mobile number. The system automatically performs real‑name authentication (integrated with the Ministry of Public Security’s authentication interface).  
+- If the ID type is a foreign permanent resident ID card or other special type, an AML flag is triggered.  
+- The mobile number must be verified via SMS verification code. If the same mobile number is associated with multiple policies, the system prompts merging of customer IDs.
+
+#### 2. Product Selection and Proposal
+- Select products on sale. The system has built‑in policy terms, rate tables, and free‑exam limits according to regulatory rules. Manual modification of rates is prohibited.  
+- When a proposal with “participating/universal” illustrations is generated, the user must check the box “I have read the product specification and benefit illustration”. Illustrated interest rates must strictly use the low/medium/high tiers prescribed by the regulator.
+
+#### 3. Online Application and Risk Disclosure
+- Health declarations are displayed one by one; the customer is forced to read and tick “Yes/No”. If any abnormal answers exist, the system automatically marks the case as “Manual Underwriting Required”.  
+- For long‑term products, an “Application Disclosure Statement” automatically pops up and requires an electronic signature. Submission is blocked if not signed.  
+- Dual‑recording association: For policies that meet the dual‑recording criteria, the system forces entry into the “Dual‑Recording Task” module. Without an associated compliant dual‑recording audio/video file, a policy number cannot be generated.
+
+#### 4. Anti‑Money Laundering and Beneficiary Identification
+- If a single single‑premium payment ≥ RMB 200,000, or if the applicant/beneficiary is a foreign political figure, the system displays a “Customer Enhanced Due Diligence Questionnaire” to collect the source of funds and occupational background, and automatically generates a “Customer AML Risk Grading Form”.  
+- If the beneficiary is not designated or is “legal heir”, a remark must be provided, otherwise the core validation fails.
+
+#### 5. Underwriting Process Display
+- **Automated underwriting:** For standard risks with cumulative risk exposure < RMB 1 million, the system gives a “Standard Acceptance” decision within seconds and generates a policy number.  
+- **Manual underwriting:** The case appears as a pending task. Underwriters can view the complete application, medical reports (PDF), and medical history materials in the “Underwriting Workbench”. They can issue a “Medical Exam Letter / Field Investigation Letter” or directly give a decision “Load / Exclusion / Decline”. All actions are logged and cannot be deleted.
+
+### III. Dual‑Recording and Visual Quality Inspection (Core Sales Compliance)
+
+Corresponds to the “Dual‑Recording Standards” and “No Sales Misrepresentation” sections of the Employee Handbook.
+
+- **Dual‑Recording Video Upload:** After offline dual‑recording via the agent’s mobile app, the video is automatically synced to the system. The file naming format is `OrgCode_PolicyNumber_RecordingTime`.  
+- **Intelligent Quality Inspection:** The system uses speech recognition to transcribe dialogue into text, automatically checks whether required scripts are present (identity introduction, product type, free‑look period, surrender loss), and flags missing keywords as “Suspected Violation”. Manual QA staff can extract videos from the inspection pool for review, record the result as “Pass” or “Rework”, and push the outcome to the agent’s pending tasks.  
+- **Dual‑Recording Locking:** A compliant dual‑recording file is bound to the policy. If the policy is surrendered during the free‑look period or lapses, the dual‑recording file is retained for 10 years after policy termination as required by regulation.
+
+### IV. Claims Service Operations
+
+Corresponds to Chapter 11 of the Employee Handbook.
+
+#### 1. Claim Notification Creation
+- After receiving a call at the 955 hotline, the customer service staff enters the claimant’s information in the “Claim – Notification” interface. The system automatically matches active policies under the claimant’s name and displays coverage types and liability clause summaries.  
+- For small medical claims, the customer can self‑report via the official WeChat account; uploaded materials (invoices, medical records) are processed through OCR.
+
+#### 2. Review and Benefit Calculation
+- The claims adjuster verifies submitted documents. Missing items can generate a one‑click “Notice of Supplementary Information”, sent via SMS link to the customer.  
+- During benefit calculation, the adjuster selects the corresponding policy liability (e.g., hospitalization medical, critical illness). The system automatically calculates the payable amount based on the policy’s formula. Manual modification is allowed but requires a reason.  
+- For non‑investigation claims above RMB 5,000, double sign‑off is mandatory.
+
+#### 3. Investigation and Denial Panel Review
+- Cases requiring investigation can be assigned as tasks to an independent adjuster or internal investigator. The task has a timeout alert (updated every 48 hours).  
+- A denial decision must be submitted to the branch/head office “Claims Panel”. The panel completes a “Claim Denial Panel Record” in the system, citing specific clause numbers and reasons, and generates an electronic “Notice of Claim Denial”. The notice can be issued only after countersignature by Legal.
+
+### V. Customer Information Protection and Data Security Operations
+
+Strictly follows Chapter 12 of the Employee Handbook.
+
+- **Data Masking:** When a user queries a customer list, the middle digits of ID numbers are masked with ``; in claim medical summaries, the name appears as `Zhang*`. Only after clicking “View Full Information” and passing secondary identity verification (facial recognition or SMS) can the plaintext be displayed. Every such view is recorded in an audit log.  
+- **Data Export Control:** Any export of a list containing customer mobile numbers or ID numbers requires a data export request. After batch processing, the file is sent as an encrypted archive to a designated email address, with the password delivered via SMS. The file is automatically deleted from the server after 7 days.  
+- **User Idle Timeout:** The system automatically logs out after 15 minutes of inactivity.
+
+### VI. Other Common Functions – Key Operations
+
+- **Commission Calculation:** On the first day of each month, the system automatically generates a commission report based on the previous month’s issued policies, renewal collections, and surrender deductions. Agents can view and confirm the report online on the agent portal.  
+- **Regulatory Reports:** Users can access “13‑Month Persistency Ratio”, “25‑Month Persistency Ratio”, etc., in the “Report Center”, with support for generation by organization and month.  
+- **Complaint Workflow:** When a complaint forwarded by the regulator is received, the compliance staff registers it in the system, assigns it to the corresponding channel manager, and sets a countdown for resolution. The resolution report and customer acknowledgment letter must be attached as files. Overdue complaints automatically trigger a reminder to the head of the branch.
+
+---
+
+## Part 2 – Secondary Development Guide
+
+### I. System Technical Architecture Overview
+
+ACIP uses a mainstream microservice architecture built on Spring Cloud Alibaba.
+
+- **Frontend:** Vue 3 + Element Plus; mobile side uses uni‑app packaged as the agent app.  
+- **Backend Microservices (split):**  
+  - `acip-product`: product definition, rate tables, policy terms  
+  - `acip-policy`: application, underwriting, policy servicing, renewal – core policy lifecycle  
+  - `acip-claim`: claim notification, benefit calculation, payment gateway integration  
+  - `acip-risk`: AML, risk rules, dual‑recording QA engine  
+  - `acip-agent`: agent management, commission calculation, organizational development  
+  - `acip-customer`: master customer data, real‑name authentication, 360° view  
+  - `acip-gateway`: API gateway – authentication, rate limiting, logging  
+- **Middleware & Storage:**  
+  - Databases: PostgreSQL 14 (core transactions), Redis (cache, distributed locks), Elasticsearch (customer search, log retrieval)  
+  - Message Queue: RabbitMQ (asynchronous processing – commission settlement, dual‑recording transcoding, state machine flows)  
+  - Object Storage: MinIO (dual‑recording A/V files, image documents)  
+- **Deployment:** Kubernetes cluster, CI/CD pipelines built with GitLab CI / Jenkins.  
+- **Security Components:** Spring Security + OAuth2.0 using JWT tokens.
+
+### II. Development Environment Setup Guide
+
+#### 1. Prerequisites
+- JDK 11+, Maven 3.8+, Node.js 16+, Docker Desktop.  
+- Recommended IDEs: IntelliJ IDEA (with Lombok and MyBatisX plugins) and VS Code (for frontend).
+
+#### 2. Code Acquisition and Build
+- GitLab repository: `git clone git@gitlab.encheng-life.com:acip/acip-backend.git`  
+- Local startup: In each service’s `resources` directory, change the registry address to local Nacos `localhost:8848`. Use `docker-compose` to start dependent middleware (Nacos, Redis, RabbitMQ, PostgreSQL). Run `mvn clean install -DskipTests`, then start each microservice’s `Application` class in the IDE.
+
+#### 3. Local Frontend Debugging
+- Enter the `acip-web` directory, run `npm install`, then `npm run serve`. Proxy API requests to the gateway’s local port. Ensure successful login and page display.
+
+### III. Code Standards and Branch Management
+
+- **Branch model:** `main` (production release), `develop` (integration testing), `feature/xxx` (feature development), `hotfix/xxx`. Merges into `develop` and `main` require a Merge Request, at least one core developer’s Code Review, and passing all pipeline stages.  
+- **Java standards:** Follow the Alibaba Java Development Manual. Checkstyle and PMD plugins are enforced. Unified response entities must use `com.encheng.common.Result<T>` containing `code`, `message`, `data`. API endpoints must have `@ApiOperation` and specify permission codes.  
+- **Frontend standards:** Follow ESLint + Prettier configuration. Component names use PascalCase; directory structure is organised by business module. API requests are uniformly encapsulated in `@/api` and inject the token via interceptors.  
+- **Logging standards:** Do not output sensitive data to logs. Use `logback` with parameter placeholders (no string concatenation). Global exception handling records stack traces and outputs a traceId.
+
+### IV. Development Guide for Core Business Modules
+
+#### 1. Adding a New Insurance Product
+In the `acip-product` service, product configuration is done through the “Product Factory”. The developer must:  
+- Insert records into `t_product_define` and `t_product_liability` to define liability codes and the fully qualified class name of the benefit calculation algorithm.  
+- If the benefit formula is special, write a class implementing the `CalculationHandler` interface and register it in the Spring container.  
+- Rate tables can be imported via CSV – batch insert into `t_rate_table`. Note that they must be encrypted at rest and decrypted on use. The frontend proposal rendering will call `/product/premium/calc` to dynamically calculate premiums.
+
+#### 2. Adding a New Claims Benefit Formula
+For proportional or fixed‑amount benefits, configure the `t_claim_formula` table with formula type `EXPRESSION`, e.g., `amount * 0.8`. For complex models, add a `ClaimCalculator` implementation that pulls invoice amounts, deductibles, etc. from the context, and use a decision table pattern for configurability. Each new formula must include unit tests covering various edge cases.
+
+#### 3. Integrating External Services
+- When adding a new facial recognition vendor, follow the SPI extension pattern: create a `FaceRecognitionService` interface, and add `@ConditionalOnProperty` on the implementation class to specify the vendor. Configuration allows switching. All external service calls must include circuit breaking (Sentinel) and retry mechanisms, and log request/response times.
+
+### V. API Development and Security Standards
+
+- **API design:** Follow RESTful principles – resource paths like `/api/v1/policies/{policyId}`. Request bodies use JSON; DTO fields must have `@Valid` validation. Use the uniform time format `yyyy-MM-dd HH:mm:ss` (string).  
+- **API documentation:** Automatically generated by Swagger3 – provide clear descriptions and examples. Update API documentation when external‑facing interfaces are modified.  
+- **Authorization:** Add `@PreAuthorize("hasAuthority('POLICY_READ')")` to each controller method; permission strings are defined by the unified permission platform. All endpoints must validate login status and permissions before executing business logic. It is forbidden to rely on hidden URLs or frontend‑only controls for access control.  
+- **Anti‑privilege escalation:** For operations on policy, claim, or other data, the system must verify that the data belongs to the current user’s organization or data permission scope. An AOP aspect `@CheckPolicyOwner` is provided; using it on a method automatically extracts the policyId and validates ownership.
+
+### VI. Database and Data Processing Standards
+
+- **Change management:** Flyway for database versioning – files named `V1.0.0__description.sql`. All DDL and DML must be submitted together with code changes. Direct manual modifications on production databases are strictly prohibited.  
+- **Sensitive data encryption:** Mobile numbers, ID numbers, bank account numbers, etc., are stored encrypted with AES‑256 in the database. The application layer uses custom TypeHandlers for transparent encryption/decryption. Keys are stored in Vault – hard‑coding is forbidden.  
+- **Query performance:** Critical queries must use indexes. `SELECT *` is forbidden. Complex multi‑table reporting queries go to Elasticsearch or a read‑only replica.
+
+### VII. Testing Requirements
+
+- **Unit tests:** At least 70% coverage for core business logic – use JUnit5 + Mockito. Claim calculations, AML rules, etc., must have data‑driven test cases.  
+- **Integration tests:** Each microservice includes `@SpringBootTest` tests simulating complete flows: application → underwriting → dual‑recording → payment → policy issuance. Use H2 or Testcontainers (real PostgreSQL) for the test database.  
+- **Security tests:** Run OWASP Dependency Check before merging to scan libraries. The penetration testing team regularly scans for common vulnerabilities (SQL injection, XSS, privilege escalation). Developers must avoid concatenating user input directly into SQL.
+
+### VIII. Version Release and Operations
+
+- **CI/CD:** Commits to `develop` automatically trigger build, unit tests, and code scanning. After merging to `main`, an approved Jenkins job packages Docker images and pushes them to Harbor. Then ArgoCD synchronises K8s configurations for canary releases – first update one pod, observe logs for anomalies, then update all pods.  
+- **Logging and monitoring:** Standard output is collected by Filebeat to ELK. Metrics (JVM, QPS, error rate) are monitored by Prometheus + Grafana. Alert rule: if a given endpoint has >10 errors in 5 minutes, a DingTalk group notification is triggered.  
+- **Emergency rollback:** The last three image versions are retained. Use `kubectl rollout undo` for one‑click rollback.
+
+### IX. Security Development Red Lines (One‑Veto)
+
+- **Do not** hard‑code backend interface addresses, internal tokens, or encryption salts in frontend code or JavaScript.  
+- **Do not** use `${}` to concatenate user input directly in SQL (MyBatis must use `#{}`).  
+- All endpoints involving monetary movements (refunds, claim payouts) **must** be idempotent (based on business reference number) and must record the operator, IP address, and timestamp in the `t_audit_trail` table.  
+- Any endpoint that downloads customer data must enforce a dataset size limit (max 500 records per request). If the limit is exceeded, an asynchronous file generation process must be used.
+
+---
+
+## Appendix – Frequently Asked Questions
+
+### Development Side
+
+**Q:** Local startup fails with “Nacos connection refused”.  
+**A:** Verify that `docker-compose` started Nacos, and that `spring.cloud.nacos.discovery.server-addr=127.0.0.1:8848` in `bootstrap.yml`.
+
+**Q:** How to test authenticated endpoints on Swagger?  
+**A:** Call the `/auth/login` endpoint to obtain a token. Then click the “Authorize” button in the Swagger UI and enter `Bearer {token}`.
+
+### Operation Side
+
+**Q:** The application submission shows “Pre‑underwriting failed”.  
+**A:** Check the underwriting result details – likely the health declaration or occupation category triggered a declinable rule. Switch to manual underwriting or consider another product.
+
+**Q:** A dual‑recording video stays in “QA in progress”.  
+**A:** For long videos, ASR transcription and AI analysis may take 15–30 minutes. If no result appears after 2 hours, contact the IT service desk to restart the QA task.
+
