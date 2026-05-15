@@ -2,6 +2,7 @@
 Implement a high-concurrency, scalable professional-domain Agent Q&A service.
 
 ## Overall Architecture
+![general design](architecture.png)
 The project is divided into four layers:
 1. **Session Layer**: Supports high-concurrency conversations based on asynchronous WebSocket.
 2. **Agent Layer**: Optimizes requests using multiple Agent service instances with load balancing.
@@ -9,6 +10,8 @@ The project is divided into four layers:
 4. **RAG Layer**: Built on Milvus.
 
 ## Agent Architecture Design
+![agent general_design](agent_arc.png)
+![agent logic](agent_logic.png)
 1. Implements Agent interaction logic based on an event-driven model. Requests are first placed into a queue; an event loop then fetches requests and assigns them to Agent threads for execution.
 2. The internal Agent is designed following the ReAct model. In each conversation round, the Agent can iterate multiple times to obtain the best answer.
 3. Supports short-term memory storage and context compression (mainly based on LLM summarization).
