@@ -35,7 +35,7 @@ class Service(SocketServiceBase):
 
 
     '''
-        将上有请求放入队列进行事件循环
+        将上游请求放入队列进行事件循环
     '''
     def process_requst(self, request):
         msg_alias = 'new_conversation' if 'trace_id' in request and memory.exist_memory(request['trace_id']) else 'origin_question'
