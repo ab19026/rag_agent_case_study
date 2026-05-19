@@ -7,12 +7,12 @@
         },
         "local" : false,
         "api" : {
-            "key" : "xxx",
-            "host" : "xxx"
+            "key" : "*",
+            "host" : "https://api.deepseek.com"
         }
     },
     "embedding" : {
-        "name" : "xx",
+        "name" : "BAAI/bge-m3",
         "port" : {
             "route" : 9811,
             "instance" : [2344,5466,3455]
@@ -20,7 +20,7 @@
         "local" : true,
     },
     "rerank" : {
-        "name" : "xx",
+        "name" : "BAAI/bge-reranker-v2-m3",
         "port" : {
             "route" : 9811,
             "instance" : [2344,5466,3455]
