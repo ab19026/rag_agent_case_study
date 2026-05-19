@@ -34,17 +34,14 @@ class Service(SocketServiceBase):
         self.async_websocket_server.start()
 
 
+    '''
+        将上有请求放入队列进行事件循环
+    '''
     def process_requst(self, request):
-        if security_check(request['msg']):
-            msg_alias = 'new_conversation' if 'trace_id' in request and memory.exist_memory(request['trace_id']) else 'origin_question'
-            request[msg_alias] = request['msg']
-            request['start_time'] = time.time()
-            self.event_queue.put(request)
-        else:
-            self.async_websocket_server.response(
-                self.app_conf['invalid_request_message'], 
-                request['conn']
-            )
+        msg_alias = 'new_conversation' if 'trace_id' in request and memory.exist_memory(request['trace_id']) else 'origin_question'
+        request[msg_alias] = request['msg']
+        request['start_time'] = time.time()
+        self.event_queue.put(request)
 
     '''
         从队列里拿出请求交给agent去执行
