@@ -8,7 +8,7 @@ model_conf = parse_json_file('../conf/model.json')
 async_websocket_client_arr = {}
 
 '''
-    初始化当前类型模型的所有实例
+    初始化当前类型模型的所有客户端实例
 '''
 def init_model_instance_list(model_usage):
     global async_websocket_client_arr
