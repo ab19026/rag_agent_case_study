@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append('..')
 from util.io import *
-from model import *
+from model.util import *
 from pymilvus import MilvusClient, DataType, Function, FunctionType, AnnSearchRequest
 from tool import *
 from network.async_websocket import *

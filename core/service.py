@@ -51,9 +51,6 @@ class Service(SocketServiceBase):
     '''
     def start(self):
         self.async_websocket_server.start()
-        agent_model_instance_list = get_model_instance_list('agent')
-        embedding_model_instance_list = get_model_instance_list('embedding')
-        rerank_model_instance_list = get_model_instance_list('rerank')
         memory = Memory()
         while self.run:
             if not self.event_queue.empty():
@@ -63,8 +60,9 @@ class Service(SocketServiceBase):
                     request = self.event_queue.get()
                     # 判断当前请求内容语言类型
                     lang = zh_en_check(request['msg'])
-                    rag = Rag(embedding_model_instance_call, rerank_model_instance_list, agent_model_instance_list)
-                    agent = Agent(agent_model_instance_list, agent_model_instance_list, rag, memory, lang)
+                    # 初始化RAG和Agent模块
+                    rag = Rag()
+                    agent = Agent(rag, memory, lang)
                 except Exception as e:
                     err = e
                 finally:
@@ -87,6 +85,7 @@ class Service(SocketServiceBase):
                 start_time = time.time()
                 result = None
                 try:
+                    # 通过异步回调的方式将Agent执行结果返回给上游
                     def agent_task(request, agent, async_websocket_server, app_conf):
                         response = agent.react_loop(
                             request, 

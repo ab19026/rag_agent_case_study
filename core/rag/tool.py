@@ -1,5 +1,6 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from PyPDF2 import PdfReader
+import jieba
 
 
 '''
@@ -23,3 +24,13 @@ def pdf_spiltter(path, chunk_size, chunk_overlap):
     for page in reader.pages:
         text += page.extract_text()
     return doc_splitter(text, chunk_size, chunk_overlap)
+
+
+'''
+    简单分词
+'''
+def split_words(content):
+    words = []
+    for v in jieba.cut(content, cut_all=False):
+        words.append(v)
+    return words

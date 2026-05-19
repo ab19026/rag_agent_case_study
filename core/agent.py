@@ -1,10 +1,10 @@
 import sys, json
 sys.path.append('..')
-from model import 
-from context import 
-from constant import 
-from util.io import 
-from rag.rag import 
+from model import *
+from context import *
+from constant import *
+from util.io import *
+from rag.rag import *
 from model.util import *
 
 
@@ -12,10 +12,10 @@ from model.util import *
     基于Re-Act-Loop架构的Agent
 '''
 class Agent():
-    def __init__(self, agent_model_instance_list, rag, memory, lang):
-        self.agent_model_instance_list = agent_model_instance_list
+    def __init__(self, rag, memory, lang):
         self.rag = rag
         self.memory = memory
+        self.lang = lang
         self.agent_conf = parse_json_file('../conf/agent.json')
         self.first_turn_prompt = load_file('../conf/%s/prompt/first_turn_react.pmt' % lang)
         self.multi_turn_prompt_full = load_file('../conf/%s/prompt/multi_turn_prompt_full.pmt' % lang)
@@ -24,6 +24,17 @@ class Agent():
 
 
     def react_loop(self, request, callback):
+        content = None
+        if 'origin_question' in request:
+            content = request['origin_question']
+        if 'new_conversation' in request:
+            content = request['new_conversation']
+        # 安全性和合规性检查
+        if content is not None:
+            if self.agent_conf['security_check'] == 'MODEL':
+                pass
+            elif self.agent_conf['security_check'] == 'RULE':
+
         if memory.get_overwrite_memory(request['trace_id'], 'round') is not None:
             memory.set_overwrite_memory(request['trace_id'], 'round', memory.get_overwrite_memory(request['trace_id'], 'round') + 1)
         round_num = memory.get_overwrite_memory(message['conv_id'], 'round')
@@ -56,8 +67,8 @@ class Agent():
                     docs = rag.retrieve(request)
                     self.memory.add_memory(request['trace_id'], "第一次RAG查询:{查询语句:%s, 结果:%s}" % (request['origin_question'], docs))
                     # 调用模型结合rag返回文档生成答案
-                    model_req = json.dumps({'context' : self.first_turn_prompt.replace('{QUESTION}', request['origin_question']).replace('{DOCUENT_LIST}', '\n'.join(doc_list))})
-                    current_result = get_best_model_instance(self.agent_model_instance_list).send(model_req)
+                    model_req = json.dumps({'context' : self.first_turn_prompt % (request['origin_question'], '\n'.join(doc_list))})
+                    current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
                     memory.set_overwrite_memory(request['trace_id'], 'last_answer', current_result)
                     self.memory.add_memory(request['trace_id'], "第一次RAG查询给出的答案:%s" % current_result)
                     log_msg['rag_query'] = request['origin_question']
@@ -74,10 +85,10 @@ class Agent():
                         log_msg['user_new_conversation'] = request['new_conversation']
                         mem_list = self.memory.add_memory(request['trace_id'], "这是第%s轮对话,用户对上一轮答案不满意,又补充了信息:{%s}" % (round_num, loop+1, message['new_conversation']))
                     if last_docs is not None:
-                        model_req = json.dumps({'context' : multi_turn_prompt_full.replace('{DOCUENT_LIST}', last_docs).replace('{MEMORY_LIST}', '\n'.join(mem_list)).replace('{ANSWER}', last_answer)})
+                        model_req = json.dumps({'context' : multi_turn_prompt_full % (last_docs, '\n'.join(mem_list))})
                     else
-                        model_req = json.dumps({'context' : self.multi_turn_prompt.replace('{MEMORY_LIST}', '\n'.join(mem_list)).replace('{ANSWER}', last_answer)})
-                    current_result = get_best_model_instance(self.agent_model_instance_list).send(model_req)
+                        model_req = json.dumps({'context' : self.multi_turn_prompt % '\n'.join(mem_list)})
+                    current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
                     log_msg['model_result'] = current_result
                     if 'Query' in current_result:
                         rag = True
@@ -129,7 +140,7 @@ class Agent():
         elif loop == self.agent_conf['max_react_loop_count'] - 1 or round_num >= self.agent_conf['max_round_num']:
             log_msg['context']['iteration_max_hit'] = True
             model_req = json.dumps({'context' : self.multi_turn_prompt_final.replace('{MEMORY_LIST}', '\n'.join(mem_list)).replace('{ANSWER}', last_answer)})
-            current_result = get_best_model_instance(self.agent_model_instance_list).send(model_req)
+            current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
             log_msg['context']['final_answer'] = current_result
             log_msg['end_time'] = time.time()
             log(log_msg)

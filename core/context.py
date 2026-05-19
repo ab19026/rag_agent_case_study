@@ -24,9 +24,23 @@ def get_token_num(text):
     return int(token_num)
 
 
+
+'''
+    调用模型进行上下文总结
+'''
+def summary_by_model(content):
+    pass
+
+
+
+'''
+    判断内容语言
+'''
 def zh_en_check(text):
     zh = 0
     for v in text:
         if bool(pattern_chinese.search(v)):
             zh += 1.0
     return 'zh' if zh / len(text) > 0.5 else 'en'
+
+

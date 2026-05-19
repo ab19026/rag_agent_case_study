@@ -139,7 +139,7 @@ def EffectiveEvaluate(Evaluate):
     '''
     def __compliance(self, line):
         model_req = json.dumps({'context' : self.compliance_prompt % (line['agent_answer'], line['all_related_docs'])})
-        result = get_best_model_instance(self.evaluate_model_instance_list).send(model_req)
+        result = get_best_model_instance(MODEL_USAGE_COMPLIANCE).send(model_req)
         return json.loads(result)['score']
 
     '''
@@ -147,7 +147,7 @@ def EffectiveEvaluate(Evaluate):
     '''
     def __style_consistency(self, line):
         model_req = json.dumps({'context' : self.style_consistency_prompt % (line['truth_answer'], line['agent_answer'], line['all_related_docs'])})
-        result = get_best_model_instance(self.evaluate_model_instance_list).send(model_req)
+        result = get_best_model_instance(MODEL_USAGE_STYLE_CONSISTENCY).send(model_req)
         return json.loads(result)['score']
 
 
