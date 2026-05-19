@@ -16,14 +16,14 @@ def doc_splitter(doc, chunk_size, chunk_overlap):
 
 
 '''
-    拆分PDF文档
+    导入PDF文档
 '''
-def pdf_spiltter(path, chunk_size, chunk_overlap):
+def pdf_spiltter(path):
     reader = PdfReader(path)
     text = ""
     for page in reader.pages:
         text += page.extract_text()
-    return doc_splitter(text, chunk_size, chunk_overlap)
+    return text
 
 
 '''

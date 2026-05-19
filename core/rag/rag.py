@@ -43,19 +43,17 @@ class Rag():
                     for filename in os.listdir('../data/%s/%s' % (language, category)):
                         file_path = '../data/%s/%s/%s' % (language, category, filename)
                         #基于递归方式拆分原始文档
+                        #使用pii mask过滤安全敏感数据
+                        doc = None
                         if '.txt' in file_path:
                             doc = pii_mask(load_file(file_path))
-                            chunks = doc_splitter(
-                                doc, 
-                                self.rag_conf['doc_split']['chunk_size'], 
-                                self.rag_conf['doc_split']['chunk_overlap']
-                            )
                         if '.pdf' in file_path:
-                            chunks += pii_mask(pdf_splitter(
-                                file_path, 
-                                self.rag_conf['doc_split']['chunk_size'], 
-                                self.rag_conf['doc_split']['chunk_overlap']
-                            ))
+                            doc = pii_mask(pdf_splitter(file_path))
+                        chunks = doc_splitter(
+                            doc, 
+                            self.rag_conf['doc_split']['chunk_size'], 
+                            self.rag_conf['doc_split']['chunk_overlap']
+                        )
                         #调用embedding模型对拆分后的文档进行embedding
                         model_req = json.dumps({'docs' : chunks})
                         docs_embeddings = binary_decode(json.loads(get_best_model_instance(MODEL_USAGE_EMBEDDING).send(model_req))['binary'])
