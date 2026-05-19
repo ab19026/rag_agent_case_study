@@ -7,7 +7,10 @@ from util.io import
 
 pattern_chinese = re.compile(r'[\u4e00-\u9fff\u3400-\u4DBF]')
 model_conf = parse_json_file('../conf/model.json')
-summary_prompt = load_file('../conf/prompt/summary.pmt')
+summary_prompt = {
+    'zh' : load_file('../conf/prompt/zh/summary.pmt'),
+    'en' : load_file('../conf/prompt/en/summary.pmt'),
+}
 
 '''
     粗略估计输入文本的token数量(根据快速换算公式):一个汉字对应一个token,一个英文单词对应0.75个token
@@ -28,8 +31,8 @@ def get_token_num(text):
 '''
     调用模型进行上下文总结
 '''
-def summary_by_model(content):
-    model_req = json.dumps({'context' : content})
+def summary_by_model(content, lang):
+    model_req = json.dumps({'context' : summary_prompt[lang] % content})
     current_result = get_best_model_instance(MODEL_USAGE_SUMMARY).send(model_req)
     return current_result
 

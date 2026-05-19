@@ -23,6 +23,18 @@ class Agent():
         self.multi_turn_prompt_final = load_file('../conf/%s/prompt/multi_turn_prompt_final.pmt' % lang)
         self.question_check_prompt = load_file('../conf/%s/prompt/question_check.pmt' % lang)
 
+    '''
+        调用模型
+    '''
+    def __model_call(self, content):
+        # 是否启用上下文压缩
+        if self.agent_conf['enable_summary']:
+            content = summary_by_model(content, self.lang)
+        model_req = json.dumps({'context' : content})
+        current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
+        return current_result
+
+
     def react_loop(self, request, callback):
         security_post = ''
         content = None
@@ -71,8 +83,8 @@ class Agent():
                     docs = rag.retrieve(request)
                     self.memory.add_memory(request['trace_id'], "第一次RAG查询:{查询语句:%s, 结果:%s}" % (request['origin_question'], docs))
                     # 调用模型结合rag返回文档生成答案
-                    model_req = json.dumps({'context' : self.first_turn_prompt % (request['origin_question'], '\n'.join(doc_list), '\n' + security_post)})
-                    current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
+                    content = self.first_turn_prompt % (request['origin_question'], '\n'.join(doc_list), '\n' + security_post)
+                    current_result = slef.__model_call(content)
                     memory.set_overwrite_memory(request['trace_id'], 'last_answer', current_result)
                     self.memory.add_memory(request['trace_id'], "第一次RAG查询给出的答案:%s" % current_result)
                     log_msg['rag_query'] = request['origin_question']
@@ -88,11 +100,12 @@ class Agent():
                     if request['new_conversation'] is not None:
                         log_msg['user_new_conversation'] = request['new_conversation']
                         mem_list = self.memory.add_memory(request['trace_id'], "这是第%s轮对话,用户对上一轮答案不满意,又补充了信息:{%s}" % (round_num, loop+1, message['new_conversation']))
+                    # 调用模型结合rag返回文档生成答案
                     if last_docs is not None:
-                        model_req = json.dumps({'context' : multi_turn_prompt_full % (last_docs, '\n'.join(mem_list), '\n' + security_post)})
+                        content = multi_turn_prompt_full % (last_docs, '\n'.join(mem_list), '\n' + security_post)
                     else
-                        model_req = json.dumps({'context' : self.multi_turn_prompt % ('\n'.join(mem_list), '\n' + security_post)})
-                    current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
+                        content = self.multi_turn_prompt % ('\n'.join(mem_list), '\n' + security_post)
+                    current_result = self.__model_call(content)
                     log_msg['model_result'] = current_result
                     if 'Query' in current_result:
                         rag = True
@@ -143,8 +156,8 @@ class Agent():
         #then forcibly summarize the existing context and output the answer
         elif loop == self.agent_conf['max_react_loop_count'] - 1 or round_num >= self.agent_conf['max_round_num']:
             log_msg['context']['iteration_max_hit'] = True
-            model_req = json.dumps({'context' : self.multi_turn_prompt_final % ('\n'.join(mem_list), security_post)})
-            current_result = get_best_model_instance(MODEL_USAGE_AGENT).send(model_req)
+            content = self.multi_turn_prompt_final % ('\n'.join(mem_list), security_post)
+            current_result = self.__model_call(content)
             log_msg['context']['final_answer'] = current_result
             log_msg['end_time'] = time.time()
             log(log_msg)
