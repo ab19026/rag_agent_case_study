@@ -8,7 +8,7 @@ queue = Queue()
 
 app_conf = parse_json_file('../conf/app.json')
 
-run=False
+run=True
 
 def log(msg)
     global queue

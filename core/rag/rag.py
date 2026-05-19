@@ -59,8 +59,8 @@ class Rag():
                                 self.rag_conf['doc_split']['chunk_overlap']
                             ))
                         #调用embedding模型对拆分后的文档进行embedding
-                        model_req = json.dumps({'docs' : chunks, 'topK' : self.rag_conf['topK']})
-                        docs_embeddings = json.loads(get_best_model_instance(MODEL_USAGE_EMBEDDING).send(model_req))
+                        model_req = json.dumps({'docs' : chunks})
+                        docs_embeddings = binary_decode(json.loads(get_best_model_instance(MODEL_USAGE_EMBEDDING).send(model_req))['binary'])
                         #将原始文档和embedding后的向量插入数据库
                         for i in range(0, len(chunks), 50):
                             batched_entities = [
@@ -99,29 +99,31 @@ class Rag():
     def retrieve(self, request):
         action_id = uid()
         err = None
+        query = None
         # 优化查询(比如把模糊查询拆分成多个精确查询)
+        # 由 ../conf/rag.json 配置决定是否启用
         try:
-            enhance_query = query_enhance(request['query'])
+            query = query_enhance(request['query'])
+            request['query'] = query[0]
         except Exception as e:
             err = e
         finally:
-            log ({
-                'action_name' : 'rag_enhance_query',
-                'action_id' : action_id,
-                'source_id' : request['source_id'] if request is not None else 'empty',
-                'context' : {
-                    'query' :  request['query'],
-                    'enhance_query' : enhance_query,
-                },
-                'trace_id' : request['trace_id'],
-                'error' : '%s' % err,
-                'start_time' : start_time,
-                'end_time' : time.time()
-            })
+            if self.rag_conf['retrieve_optimizer'] is not None:
+                log ({
+                    'action_name' : 'rag_enhance_query',
+                    'action_id' : action_id,
+                    'source_id' : request['source_id'] if request is not None else 'empty',
+                    'context' : {
+                        'query' :  request['query'],
+                        'enhance_query' : enhance_query,
+                    },
+                    'trace_id' : request['trace_id'],
+                    'error' : '%s' % err,
+                    'start_time' : start_time,
+                    'end_time' : time.time()
+                })
         docs = []
-        docs_embedding = []
         try:
-            request['query'] = enhance_query
             if topK is None:
                 topK = 3
             rerank_topK = topK = topK * 5
@@ -178,8 +180,7 @@ class Rag():
                 )
             for hits in res:
                 for hit in hits:
-                    docs.append(hit['origin_doc'])
-                    docs_embedding.append({'dense' : hit['doc_dense'], 'sparse' : hit['doc_sparse']})
+                    docs.append(hit)
         except Exception as e:
             err = e
         finally:
@@ -199,8 +200,8 @@ class Rag():
         # 对检索结果进行rerank
         if self.rag_conf['rerank']:
             try:
-                model_req = json.dumps({'docs' : docs, 'query' : request['query'], 'topK' : self.rag_conf['topK']})
-                docs = [v['doc'] for v in json.loads(get_best_model_instance(MODEL_USAGE_RERANK).send(model_req))]
+                model_req = json.dumps({'docs' : [v['origin_doc'] for v in docs], 'query' : query, 'topK' : self.rag_conf['topK']})
+                docs = [v['origin_doc'] for v in docs if v['doc_id'] in set(json.loads(get_best_model_instance(MODEL_USAGE_RERANK).send(model_req)))]
             except Exception as e:
                 err = e
             finally:
@@ -216,8 +217,11 @@ class Rag():
                     'start_time' : start_time,
                     'end_time' : time.time()
                 })
-        return docs
+        return [v['origin_doc'] for v in docs]
 
+    '''
+        优化查询质量(比如将模糊的查询语句拆分成多个更精确的查询语句)
+    '''
     def query_enhance(self, query):
         lang = zh_en_check(query)
         if self.rag_conf['retrieve_optimizer'] is not None:
@@ -225,9 +229,7 @@ class Rag():
                 context = self.split_query_prompt[lang] % query if opt == 'SPLIT' else self.enhance_rag_query[lang] % query
                 model_req = json.dumps({'context' : context})
                 query = json.loads(get_best_model_instance(MODEL_USAGE_QUERY_ENHANCE).send(model_req))
-        if PROMPT_DELIMITER in query:
-            query = query.split(PROMPT_DELIMITER)
-        else:
+        if not isinstance(query, list):
             query = [query]
         return query
 

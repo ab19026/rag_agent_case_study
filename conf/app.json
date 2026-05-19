@@ -5,6 +5,8 @@
     },
     "max_worker_num" : 10,
     "invalid_request_message" : "",
-    "agent_trace" : true
+    "agent_trace" : true,
+    "log_persist_buffer" : 500,
+    "log_path" : "../data/agent_log.txt"
 }
 
