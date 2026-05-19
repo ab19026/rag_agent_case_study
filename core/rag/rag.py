@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, time
 sys.path.append('..')
 from util.io import *
 from model.util import *
@@ -27,8 +27,6 @@ class Rag():
             'en' : load_file('../conf/en/prompt/enhance_rag_query.pmt'),
             'zh' : load_file('../conf/zh/prompt/enhance_rag_query.pmt'),
         }
-        self.multi_turn_prompt_full = load_file('../conf/%s/prompt/multi_turn_prompt_full.pmt' % lang)
-
         self.rag_conf = parse_json_file('../conf/rag_conf.json')
         self.client = None
         self.table = {}
@@ -79,19 +77,43 @@ class Rag():
         创建RAG数据库
     '''
     def __create_db(self):
-        self.client = MilvusClient("../data/{%s}.db" % self.rag_conf['db_name'])
-        self.table = {}
-        for language in self.rag_conf['lang']:
-            for category in self.rag_conf['lang'][language]:
-                table_name = language + '_' + categoty
-                self.table[table_name] = create_collection(self.client, table_name)
+        start_time = time.time()
+        try:
+            self.client = MilvusClient("../data/{%s}.db" % self.rag_conf['db_name'])
+            self.table = {}
+            for language in self.rag_conf['lang']:
+                for category in self.rag_conf['lang'][language]:
+                    table_name = language + '_' + categoty
+                    self.table[table_name] = create_collection(self.client, table_name)
+        except Exception as e:
+            err = e
+        finally:
+            log ({
+                    'action_name' : 'create_rag_db',
+                    'error' : '%s' % err,
+                    'start_time' : start_time,
+                    'end_time' : time.time()
+                })
 
 
     def __insert_data(self, table_name, data):
-        res = self.client.insert(
-            collection_name=table_name,
-            data=data
-        )
+        start_time = time.time()
+        res = None
+        try:
+            res = self.client.insert(
+                collection_name=table_name,
+                data=data
+            )
+        except Exception as e:
+            err = e
+        finally:
+            log ({
+                    'action_name' : 'insert_rag_data',
+                    'context' : {'result' : res},
+                    'error' : '%s' % err,
+                    'start_time' : start_time,
+                    'end_time' : time.time()
+                })
 
     '''
         RAG检索核心逻辑
