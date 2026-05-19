@@ -224,7 +224,7 @@ class Rag():
             for opt in self.rag_conf['retrieve_optimizer']:
                 context = self.split_query_prompt[lang] % query if opt == 'SPLIT' else self.enhance_rag_query[lang] % query
                 model_req = json.dumps({'context' : context})
-                query = json.loads(get_best_model_instance(self.enhance_query_model_instance_list).send(model_req))
+                query = json.loads(get_best_model_instance(MODEL_USAGE_QUERY_ENHANCE).send(model_req))
         if PROMPT_DELIMITER in query:
             query = query.split(PROMPT_DELIMITER)
         else:
