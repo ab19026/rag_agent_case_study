@@ -1,5 +1,6 @@
 {
     "max_react_loop_count" : 10,
     "max_round_num" : 5,
-    "security_check" : "MODEL"
+    "security_check" : "MODEL",
+    "enable_compress" : false
 }

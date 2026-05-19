@@ -29,8 +29,9 @@ def get_token_num(text):
     调用模型进行上下文总结
 '''
 def summary_by_model(content):
-    pass
-
+    model_req = json.dumps({'context' : content})
+    current_result = get_best_model_instance(MODEL_USAGE_SUMMARY).send(model_req)
+    return current_result
 
 
 '''
