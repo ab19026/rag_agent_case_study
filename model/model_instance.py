@@ -1,13 +1,14 @@
 import sys, os
 sys.path.append('..')
 from util.io import *
-from transformers import AutoTokenizer, AutoModelForCausalLM
 import json
 from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 from pymilvus.model.reranker import BGERerankFunction
 from util.util import *
 from interface.socket_service_base import *
+from openai import OpenAI
 import pickle
+from util import *
 
 '''
     单模型实例,启动后将以websocket server形式对外提供推理服务
@@ -61,24 +62,15 @@ class ModelInstance(SocketServiceBase):
                     index_arr.append(v.index)
                 result = json.dumps(index_arr)
             elif self.model_name == 'agent_local':
-                messages = [
-                    {"role": "user", "content": request['context']},
-                ]
-                inputs = tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    tokenize=True,
-                    return_dict=True,
-                    return_tensors="pt",
-                ).to(model.device)
-                outputs = model.generate(**inputs, max_new_tokens=100)
-                result = json.dumps({'result' : tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:])})
+                result = model_by_local(self.model, request['context'], self.model_conf[self.model_name]['max_output_token_num'])
             elif self.model_name == 'agent_api':
-                result = None
+                current_conf = self.model_conf[self.model_name]
+                result = model_by_api(self.model_name, current_conf['api']['host'], current_conf['api']['key'], request['context'])
             self.async_websocket_server.response(
                 'FINAL:' + result, 
                 raw_request['conn']
             )
+            return result
         except Exception as e:
             error = e
         finally:

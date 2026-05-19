@@ -1,6 +1,6 @@
 {
     "agent" : {
-        "name" : "deepseekV4",
+        "name" : "deepseek-v4-pro",
         "port" : {
             "route" : 9811,
             "instance" : [2344,5466,3455]
@@ -9,7 +9,8 @@
         "api" : {
             "key" : "*",
             "host" : "https://api.deepseek.com"
-        }
+        },
+        "max_output_token_num" : 100
     },
     "embedding" : {
         "name" : "BAAI/bge-m3",
