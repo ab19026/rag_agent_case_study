@@ -1,0 +1,4 @@
+Please perform a concise summary (accurately extracting key information) of the following content:
+%s
+The requirement is that the structure of the original content (overall format, layout, specifications, process keywords, etc.) must not be altered in any way.
+Output the summarized content still in the original format.

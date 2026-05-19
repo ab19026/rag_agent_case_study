@@ -7,7 +7,11 @@ from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 from pymilvus.model.reranker import BGERerankFunction
 from util.util import *
 from interface.socket_service_base import *
+import pickle
 
+'''
+    单模型实例,启动后将以websocket server形式对外提供推理服务
+'''
 class ModelInstance(SocketServiceBase):
     def __init__(self, model_name, port):
         self.model_name = model_name
@@ -18,26 +22,29 @@ class ModelInstance(SocketServiceBase):
             None,
             port
         )
-        #同时支持稠密和稀疏向量的embedding模型
+        #用于RAG的同时支持稠密和稀疏向量的embedding模型
         if model_name == 'embedding':
             self.model = BGEM3EmbeddingFunction(
                 model_name=model_name,
                 device='cpu',
                 use_fp16=False
             )
+        #用于RAG的rerank模型
         elif model_name == 'rerank':
             self.model = BGERerankFunction(
                 model_name=model_name,
                 device="cpu"
             )
+        #如果是通用需求(agent对话、优化等)
+        #可以调用本地模型或者通过API调用外部大模型服务
         elif model_name == 'agent':
             if self.model_conf['local']:
-                model_name += '_local'
+                self.model_name += '_local'
                 tokenizer = AutoTokenizer.from_pretrained(self.model_conf['name'])
                 model = AutoModelForCausalLM.from_pretrained(self.model_conf['name'])
                 self.model = {'tokenizer' : tokenizer, 'model' : model}
             elif self.model_conf['api'] is not None and self.model_conf['api']['key'] is not None and self.model_conf['api']['host'] is not None:
-                model_name += '_api'
+                self.model_name += '_api'
 
     def infer(self, raw_request):
         start_time = time.time()
@@ -46,8 +53,8 @@ class ModelInstance(SocketServiceBase):
         try:
             request = json.loads(raw_request['msg'])
             if self.model_name == 'embedding':
-                result = self.model.encode_documents(request['docs'], request['topK'])
-                result = json.dumps({k : result[k].tolist() for k in result})
+                result = self.model.encode_documents(request['docs'])
+                result = json.dumps({'binary' : binary_encode(result)})
             elif self.model_name == 'rerank':
                 index_arr = []
                 for v in self.model(query=request['query'], documents=request['docs'].split('\n'), top_k=request['topK']):

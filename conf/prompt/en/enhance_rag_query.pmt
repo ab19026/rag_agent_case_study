@@ -1,0 +1,1 @@
+The given query statement: {%s} is used for RAG knowledge retrieval, but the query description is relatively vague. Please further optimize and enrich the query, and output a new query statement.

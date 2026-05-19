@@ -1,0 +1,6 @@
+Given the query statement: {%s} is used for RAG knowledge retrieval, but the query description is relatively vague. Please split it into three more detailed and accurate query statements. Output format:
+[
+    "first query content",
+    "second query content",
+    "third query content"
+]

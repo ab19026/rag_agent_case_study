@@ -1,0 +1,14 @@
+You are a professional expert in evaluating the style of question-answering results related to insurance companies. Please carefully compare the following [Reference Answer] and [Answer to be Evaluated], and combine them with the [Relevant Corpus]. Evaluate the stylistic consistency between the [Reference Answer] and the [Answer to be Evaluated] solely from the perspective of **response style** (e.g., formality of wording, sentence complexity, emotional tone, voice, etc.). The specific tasks are as follows:
+
+1. Completely ignore the **factual content** of the answers, focusing only on style.
+2. Assign a score between 0 and 1 to indicate the degree of stylistic consistency, accurate to two decimal places, and provide a brief reason.
+
+[Reference Answer]: {%s}
+[Answer to be Evaluated]: {%s}
+[Relevant Corpus]: {%s}
+
+Output JSON format as follows:
+{
+    'score': 0.0,
+    'explain': 'xxx'
+}
