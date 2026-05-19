@@ -60,7 +60,7 @@ class Rag():
                             ))
                         #调用embedding模型对拆分后的文档进行embedding
                         model_req = json.dumps({'docs' : chunks, 'topK' : self.rag_conf['topK']})
-                        docs_embeddings = json.loads(get_best_model_instance(self.embedding_model_instance_call).send(model_req))
+                        docs_embeddings = json.loads(get_best_model_instance(MODEL_USAGE_EMBEDDING).send(model_req))
                         #将原始文档和embedding后的向量插入数据库
                         for i in range(0, len(chunks), 50):
                             batched_entities = [
@@ -127,8 +127,8 @@ class Rag():
             rerank_topK = topK = topK * 5
             lang = zh_en_check(query)
             # 调用模型进行embedding
-            model_req = json.dumps({'source_id' : action_id, 'docs' : request['query'], 'topK' : self.rag_conf['topK']})
-            query_embedding = json.loads(get_best_model_instance(self.embedding_model_instance_call).send(model_req))
+            model_req = json.dumps({'source_id' : action_id, 'docs' : request['query']})
+            query_embedding = json.loads(get_best_model_instance(MODEL_USAGE_EMBEDDING).send(model_req))
         except Exception as e:
             err = r
         finally:
@@ -196,10 +196,11 @@ class Rag():
                 'start_time' : start_time,
                 'end_time' : time.time()
             })
+        # 对检索结果进行rerank
         if self.rag_conf['rerank']:
             try:
                 model_req = json.dumps({'docs' : docs, 'query' : request['query'], 'topK' : self.rag_conf['topK']})
-                docs = [v['doc'] for v in json.loads(get_best_model_instance(self.rerank_model_instance_list).send(model_req))]
+                docs = [v['doc'] for v in json.loads(get_best_model_instance(MODEL_USAGE_RERANK).send(model_req))]
             except Exception as e:
                 err = e
             finally:
