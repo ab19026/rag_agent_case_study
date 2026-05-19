@@ -8,8 +8,8 @@ import jieba
 '''
 def doc_splitter(doc, chunk_size, chunk_overlap):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500 if chunk_size is None or chunk_size <= 10 else chunk_size,
-        chunk_overlap=50,    
+        chunk_size=10 if chunk_size is None or chunk_size <= 10 else chunk_size,
+        chunk_overlap=5 if chunk_overlap is None or chunk_overlap <= 5 else chunk_overlap,    
         separators=["\n\n", "\n", " ", ""]
     )
     return splitter.split_text(doc)
