@@ -120,11 +120,11 @@ The project is divided into four layers:
 **a. RAG Retrieval Effectiveness Evaluation (Precision, Recall, Faithfulness)**
 - To accurately evaluate RAG retrieval, all input documents were split into multiple document chunks (using LangChain's RecursiveCharacterTextSplitter). For each query, the most relevant N chunks were identified through a combination of human judgment and LLM assistance, and then used together with the final Agent answer to calculate the following metrics.
 - **Average Precision@TopK**  
-  Sum( Number of relevant chunks among the returned K chunks / K ) / Number of queries
+  $$\frac{\sum \left( \frac{\text{Number of relevant chunks among the returned K chunks}}{K} \right)}{\text{Number of queries}}$$
 - **Average Recall@TopK**  
-  Sum( Number of relevant chunks among the returned K documents / Total number of relevant chunks for the query ) / Number of queries
+  $$\frac{\sum \left( \frac{\text{Number of relevant chunks among the returned K documents}}{\text{Total number of relevant chunks for the query}} \right)}{\text{Number of queries}}$$
 - **Average Faithfulness** (based on RAGAS)  
-  Sum( Faithfulness score calculated by LLM based on {query, answer, retrieved documents} ) / Number of queries
+  $$\frac{\sum \left( \text{Faithfulness score calculated by LLM based on \{query, answer, retrieved documents\}} \right)}{\text{Number of queries}}$$
 - The final metrics are calculated as follows (10 queries total; the table shows average metrics over the 10 queries):
 
 |                           | Average Precision | Average Recall | Faithfulness |
@@ -136,13 +136,13 @@ The project is divided into four layers:
 
 **b. RAG Answer Generation Effectiveness Evaluation (Compliance, Style Consistency, Accuracy, Refusal Rate)**
 - **Average Accuracy** (based on semantic similarity between answer and ground truth)  
-  Sum( Semantic similarity(ground truth answer, Agent returned answer) ) / Number of questions
+  $$\frac{\sum \left( \text{Semantic similarity(ground truth answer, Agent returned answer)} \right)}{\text{Number of questions}}$$
 - **Average Compliance Rate** (LLM-as-a-Judge, compliance check prompt reference)  
-  Sum( Compliance rate computed by LLM based on {answer, related documents} ) / Number of questions
+  $$\frac{\sum \left( \text{Compliance rate computed by LLM based on \{answer, related documents\}} \right)}{\text{Number of questions}}$$
 - **Average Style Consistency Rate** (LLM-as-a-Judge, style check prompt reference)  
-  Sum( Style consistency rate computed by LLM based on {answer, related documents} ) / Number of questions
+  $$\frac{\sum \left( \text{Style consistency rate computed by LLM based on \{answer, related documents\}} \right)}{\text{Number of questions}}$$
 - **Refusal Rate** (basic agent prompt already includes question compliance check)  
-  Sum( LLM refuses to answer the question ) / Number of questions
+  $$\frac{\sum \left( \text{LLM refuses to answer the question} \right)}{\text{Number of questions}}$$
 - The final metrics are as follows (10 legitimate queries and 10 illegitimate queries; table numbers are average metrics for the respective 10 questions):
 
 |                           | Avg Accuracy | Avg Compliance Rate | Avg Style Consistency | Refusal Rate (on illegitimate questions) |
